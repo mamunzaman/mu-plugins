@@ -73,22 +73,22 @@ function ict_user_has_wordfence_2fa( $user_id ) {
  */
 add_action( 'wp_ajax_nopriv_ict_ast_check_user', __NAMESPACE__ . '\\ajax_check_user' );
 function ajax_check_user() {
-	try {
+    try {
 		if ( isset( $_POST['nonce'] ) && ! wp_verify_nonce( $_POST['nonce'], 'ict_checkout_nonce' ) ) {
 			wp_send_json_error( [ 'msg' => __( 'Security check failed.', 'ict' ) ] );
-		}
-
+        }
+        
 		$username = isset( $_POST['username'] ) ? sanitize_text_field( wp_unslash( $_POST['username'] ) ) : '';
-
+        
 		if ( $username === '' ) {
 			wp_send_json( [ 'exists' => false, 'msg' => __( 'Please enter username or email.', 'ict' ) ] );
-		}
+        }
 
 		$user = is_email( $username ) ? get_user_by( 'email', $username ) : get_user_by( 'login', $username );
-
+        
 		if ( ! $user ) {
 			wp_send_json( [ 'exists' => false ] );
-		}
+        }
 
 		$has_2fa = ict_user_has_wordfence_2fa( $user->ID );
 
@@ -100,7 +100,7 @@ function ajax_check_user() {
 		);
 	} catch ( \Throwable $e ) {
 		wp_send_json_error( [ 'msg' => __( 'An error occurred. Please try again.', 'ict' ) ] );
-	}
+    }
 }
 
 /**
@@ -109,11 +109,11 @@ function ajax_check_user() {
  */
 add_action( 'wp_ajax_nopriv_ict_ast_verify_password', __NAMESPACE__ . '\\ajax_verify_password' );
 function ajax_verify_password() {
-	try {
+    try {
 		if ( isset( $_POST['nonce'] ) && ! wp_verify_nonce( $_POST['nonce'], 'ict_checkout_nonce' ) ) {
 			wp_send_json_error( [ 'msg' => __( 'Security check failed.', 'ict' ) ] );
-		}
-
+        }
+        
 		$username = isset( $_POST['username'] ) ? sanitize_text_field( wp_unslash( $_POST['username'] ) ) : '';
 		$password = isset( $_POST['password'] ) ? (string) wp_unslash( $_POST['password'] ) : '';
 
@@ -124,7 +124,7 @@ function ajax_verify_password() {
 					'msg' => __( 'Please enter username/email and password.', 'ict' ),
 				]
 			);
-		}
+        }
 
 		$user = is_email( $username ) ? get_user_by( 'email', $username ) : get_user_by( 'login', $username );
 		if ( ! $user ) {
@@ -134,7 +134,7 @@ function ajax_verify_password() {
 					'msg' => __( 'User not found.', 'ict' ),
 				]
 			);
-		}
+        }
 
 		if ( ! wp_check_password( $password, $user->user_pass, $user->ID ) ) {
 			wp_send_json(
@@ -143,7 +143,7 @@ function ajax_verify_password() {
 					'msg' => __( 'Incorrect password.', 'ict' ),
 				]
 			);
-		}
+        }
 
 		$has_2fa = ict_user_has_wordfence_2fa( $user->ID );
 
@@ -155,7 +155,7 @@ function ajax_verify_password() {
 		);
 	} catch ( \Throwable $e ) {
 		wp_send_json_error( [ 'msg' => __( 'An error occurred. Please try again.', 'ict' ) ] );
-	}
+    }
 }
 
 /**
@@ -165,11 +165,11 @@ function ajax_verify_password() {
  */
 add_action( 'wp_ajax_nopriv_ict_ast_login_with_2fa', __NAMESPACE__ . '\\ajax_login_with_2fa' );
 function ajax_login_with_2fa() {
-	try {
+    try {
 		if ( isset( $_POST['nonce'] ) && ! wp_verify_nonce( $_POST['nonce'], 'ict_checkout_nonce' ) ) {
 			wp_send_json_error( [ 'msg' => __( 'Security check failed.', 'ict' ) ] );
-		}
-
+        }
+        
 		$username = isset( $_POST['username'] ) ? sanitize_text_field( wp_unslash( $_POST['username'] ) ) : '';
 		$password = isset( $_POST['password'] ) ? (string) wp_unslash( $_POST['password'] ) : '';
 		$token    = isset( $_POST['wfls_token'] ) ? sanitize_text_field( wp_unslash( $_POST['wfls_token'] ) ) : '';
@@ -185,14 +185,14 @@ function ajax_login_with_2fa() {
 
 		// Make the token available to Wordfence (they read $_POST['wfls-token']).
 		if ( $token !== '' ) {
-			$_POST['wfls-token'] = $token;
-		}
+            $_POST['wfls-token'] = $token;
+        }
 
 		$user = wp_signon(
 			[
-				'user_login'    => $username,
-				'user_password' => $password,
-				'remember'      => true,
+            'user_login'    => $username,
+            'user_password' => $password,
+            'remember'      => true,
 			],
 			false
 		);
@@ -204,12 +204,12 @@ function ajax_login_with_2fa() {
 					'msg' => $user->get_error_message(),
 				]
 			);
-		}
+        }
 
 		wp_send_json( [ 'ok' => true ] );
 	} catch ( \Throwable $e ) {
 		wp_send_json_error( [ 'msg' => __( 'An error occurred. Please try again.', 'ict' ) ] );
-	}
+    }
 }
 
 /**
@@ -219,9 +219,9 @@ function ajax_login_with_2fa() {
 add_filter( 'woocommerce_checkout_fields', __NAMESPACE__ . '\\enable_account_creation', 10, 1 );
 function enable_account_creation( $fields ) {
 	if ( isset( $_POST['ict_create_account'] ) && $_POST['ict_create_account'] === '1' ) {
-		$_POST['createaccount'] = '1';
-	}
-	return $fields;
+        $_POST['createaccount'] = '1';
+    }
+    return $fields;
 }
 
 /**
@@ -232,18 +232,19 @@ add_action(
 	'wp_enqueue_scripts',
 	function () {
 		if ( ! function_exists( 'is_checkout' ) || ! is_checkout() || is_user_logged_in() ) {
-			return;
-		}
+        return;
+    }
 
 		wp_register_script( 'ict-ast-checkout-2step-2fa', false, [], null, true );
 		wp_enqueue_script( 'ict-ast-checkout-2step-2fa' );
-
+    
 		wp_localize_script(
 			'ict-ast-checkout-2step-2fa',
 			'ictCheckoutAjax',
 			[
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'nonce'    => wp_create_nonce( 'ict_checkout_nonce' ),
+				'ajax_url'        => admin_url( 'admin-ajax.php' ),
+				'nonce'           => wp_create_nonce( 'ict_checkout_nonce' ),
+				'lost_password_url' => wp_lostpassword_url(),
 			]
 		);
 
@@ -290,8 +291,8 @@ add_action(
 			'<div class="woocommerce-billing-fields__customer-login-label">Already have an account? <a href="javascript:" id="ast-customer-login-url">Log in</a></div>' +
 			'</div>' +
 			'<p class="form-row form-row-wide" id="ict_username_row">' +
-			'<label for="ict_login_username">Username or email address <span class="required">*</span></label>' +
-			'<input type="text" class="input-text" id="ict_login_username" autocomplete="username email">' +
+			'<label for="billing_email">Username or email address <span class="required">*</span></label>' +
+			'<input type="email" class="input-text" name="billing_email" id="billing_email" placeholder="Username or Email Address" value="" aria-required="true" autocomplete="email username">' +
 			'<span class="ict-user-registered-message" id="ict_user_registered_message" style="display:none;">This user is already registered. Please enter the password to continue.</span>' +
 			'</p>' +
 			'<p class="form-row form-row-wide" id="ict_password_row" style="display:none;">' +
@@ -309,10 +310,9 @@ add_action(
 			'</p>' +
 			'<p class="form-row ict-login-actions">' +
 			'<button type="button" class="button ast-customer-login-section__login-button ictmm-aps-btn-secondary" id="ict_login_button">Continue</button>' +
+			'<a href="' + (window.ictCheckoutAjax && window.ictCheckoutAjax.lost_password_url ? window.ictCheckoutAjax.lost_password_url : '/my-account/lost-password/') + '" class="ict-lost-password-link" id="ict_lost_password_link" style="display:none;">Lost your password?</a>' +
 			'</p>' +
-			'<p class="form-row ict-lost-password" id="ict_lost_password_row" style="display:none;">' +
-			'<a href="/my-account/lost-password/">Lost your password?</a>' +
-			'</p>' +
+			'<p class="form-row ict-optional-login-message" id="ict_optional_login_message" style="display:none;">Login is optional, you can continue with your order below.</p>' +
 			'<div class="ict-login-message"></div>' +
 			'</div>';
 
@@ -453,12 +453,11 @@ add_action(
 
 	function initLoginLogic(){
 		const btn = document.getElementById('ict_login_button');
-		const userInp = document.getElementById('ict_login_username');
+		const userInp = document.getElementById('billing_email');
 		const passInp = document.getElementById('ict_login_password');
 		const passRow = document.getElementById('ict_password_row');
 		const createRow = document.getElementById('ict_create_account_row');
 		const createChk = document.getElementById('ict_create_account');
-		const lostPwdRow = document.getElementById('ict_lost_password_row');
 		const loginLink = document.getElementById('ast-customer-login-url');
 
 		if (!btn || !userInp || !passInp || !passRow || !createRow || !createChk) return;
@@ -467,7 +466,8 @@ add_action(
 			loginLink.addEventListener('click', function(e){
 				e.preventDefault();
 				const passRowEl = document.getElementById('ict_password_row');
-				const userMsg = document.getElementById('ict_user_registered_message');
+				const lostPwdLink = document.getElementById('ict_lost_password_link');
+				const optionalMsg = document.getElementById('ict_optional_login_message');
 				if (passRowEl) {
 					const computedStyle = window.getComputedStyle(passRowEl);
 					const isHidden = computedStyle.display === 'none' || 
@@ -476,8 +476,9 @@ add_action(
 					
 					if (isHidden) {
 						slideDown(passRowEl);
-						if (userMsg) slideDown(userMsg);
 						if (btn) btn.textContent = 'Login';
+						if (lostPwdLink) showElement(lostPwdLink);
+						if (optionalMsg) slideDown(optionalMsg);
 						if (passInp) {
 							setTimeout(function(){
 								passInp.focus();
@@ -485,8 +486,9 @@ add_action(
 						}
 					} else {
 						slideUp(passRowEl);
-						if (userMsg) slideUp(userMsg);
 						if (btn) btn.textContent = 'Continue';
+						if (lostPwdLink) hideElement(lostPwdLink);
+						if (optionalMsg) slideUp(optionalMsg);
 					}
 				}
 			});
@@ -513,6 +515,7 @@ add_action(
 			});
 		}
 
+
 		let checkTimeout = null;
 		userInp.addEventListener('blur', function(){
 			const username = userInp.value.trim();
@@ -534,7 +537,8 @@ add_action(
 					const usernameRow = document.getElementById('ict_username_row');
 					const passRowEl = document.getElementById('ict_password_row');
 					const createRowEl = document.getElementById('ict_create_account_row');
-					const lostPwdRowEl = document.getElementById('ict_lost_password_row');
+					const lostPwdLink = document.getElementById('ict_lost_password_link');
+					const optionalMsg = document.getElementById('ict_optional_login_message');
 					
 					if (res.exists) {
 						state.userExists = true;
@@ -544,7 +548,8 @@ add_action(
 						showElement(usernameRow);
 						showElement(passRowEl);
 						hideElement(createRowEl);
-						showElement(lostPwdRowEl);
+						if (lostPwdLink) showElement(lostPwdLink);
+						if (optionalMsg) showElement(optionalMsg);
 						const existing2FA = document.getElementById('ict_2fa_row');
 						if (existing2FA) hideElement(existing2FA);
 						const userMsg = document.getElementById('ict_user_registered_message');
@@ -557,7 +562,8 @@ add_action(
 						showElement(usernameRow);
 						hideElement(passRowEl);
 						showElement(createRowEl);
-						hideElement(lostPwdRowEl);
+						if (lostPwdLink) hideElement(lostPwdLink);
+						if (optionalMsg) hideElement(optionalMsg);
 						const existing2FA = document.getElementById('ict_2fa_row');
 						if (existing2FA) hideElement(existing2FA);
 						const userMsg = document.getElementById('ict_user_registered_message');
@@ -584,11 +590,6 @@ add_action(
 					hiddenInput.value = '1';
 					const checkoutForm = document.querySelector('form.checkout');
 					if (checkoutForm) checkoutForm.appendChild(hiddenInput);
-				}
-				const billingEmail = document.querySelector('#billing_email');
-				if (billingEmail && !billingEmail.value && state.username) {
-					billingEmail.value = state.username;
-					billingEmail.dispatchEvent(new Event('change', { bubbles: true }));
 				}
 				const billingFields = document.querySelector('.woocommerce-billing-fields');
 				if (billingFields) billingFields.style.display = '';
@@ -662,7 +663,8 @@ add_action(
 						
 						const usernameRow = document.getElementById('ict_username_row');
 						const passRowEl = document.getElementById('ict_password_row');
-						const lostPwdRowEl = document.getElementById('ict_lost_password_row');
+						const lostPwdLink = document.getElementById('ict_lost_password_link');
+						const optionalMsg = document.getElementById('ict_optional_login_message');
 						
 						if (state.has2FA) {
 							console.log('ICT 2FA: User has 2FA, creating input field');
@@ -670,7 +672,8 @@ add_action(
 							
 							if (usernameRow) hideElement(usernameRow);
 							if (passRowEl) hideElement(passRowEl);
-							if (lostPwdRowEl) hideElement(lostPwdRowEl);
+							if (lostPwdLink) hideElement(lostPwdLink);
+							if (optionalMsg) hideElement(optionalMsg);
 							
 							const loginLabel = document.querySelector('#ict-checkout-login-box .woocommerce-billing-fields__customer-login-label');
 							if (loginLabel) hideElement(loginLabel);
@@ -687,7 +690,7 @@ add_action(
 										tfInpEl.select();
 									}, 100);
 								}
-								btn.textContent = 'Verify & Log in';
+							btn.textContent = 'Verify & Log in';
 								showInfo('Password verified. Please enter your 2FA code.');
 							} else {
 								console.error('ICT 2FA: Failed to create 2FA input field');
@@ -715,11 +718,13 @@ add_action(
 					if (state.has2FA) {
 						const usernameRow = document.getElementById('ict_username_row');
 						const passRowEl = document.getElementById('ict_password_row');
-						const lostPwdRowEl = document.getElementById('ict_lost_password_row');
+						const lostPwdLink = document.getElementById('ict_lost_password_link');
+						const optionalMsg = document.getElementById('ict_optional_login_message');
 						
 						hideElement(usernameRow);
 						hideElement(passRowEl);
-						hideElement(lostPwdRowEl);
+						if (lostPwdLink) hideElement(lostPwdLink);
+						if (optionalMsg) hideElement(optionalMsg);
 						
 						const loginLabel = document.querySelector('#ict-checkout-login-box .woocommerce-billing-fields__customer-login-label');
 						if (loginLabel) hideElement(loginLabel);
@@ -805,15 +810,17 @@ add_action(
 		if (replaceCustomerInfoWithLoginBox()) {
 			initLoginLogic();
 		}
+		
 	}
 
 	document.addEventListener('click', function(e){
 		if (e.target && e.target.id === 'ast-customer-login-url') {
 			e.preventDefault();
 			const passRowEl = document.getElementById('ict_password_row');
-			const userMsg = document.getElementById('ict_user_registered_message');
 			const passInp = document.getElementById('ict_login_password');
 			const btn = document.getElementById('ict_login_button');
+			const lostPwdLink = document.getElementById('ict_lost_password_link');
+			const optionalMsg = document.getElementById('ict_optional_login_message');
 			if (passRowEl) {
 				const computedStyle = window.getComputedStyle(passRowEl);
 				const isHidden = computedStyle.display === 'none' || 
@@ -822,8 +829,9 @@ add_action(
 				
 				if (isHidden) {
 					slideDown(passRowEl);
-					if (userMsg) slideDown(userMsg);
 					if (btn) btn.textContent = 'Login';
+					if (lostPwdLink) showElement(lostPwdLink);
+					if (optionalMsg) slideDown(optionalMsg);
 					if (passInp) {
 						setTimeout(function(){
 							passInp.focus();
@@ -831,8 +839,9 @@ add_action(
 					}
 				} else {
 					slideUp(passRowEl);
-					if (userMsg) slideUp(userMsg);
 					if (btn) btn.textContent = 'Continue';
+					if (lostPwdLink) hideElement(lostPwdLink);
+					if (optionalMsg) slideUp(optionalMsg);
 				}
 			}
 		}
@@ -855,7 +864,7 @@ add_action(
 	mo.observe(document.body, {childList:true, subtree:true});
 })();
 JS
-		);
+    );
 	},
 	20
 );
@@ -867,9 +876,9 @@ add_action(
 	'wp_head',
 	function () {
 		if ( ! function_exists( 'is_checkout' ) || ! is_checkout() || is_user_logged_in() ) {
-			return;
-		}
-		?>
+        return;
+    }
+    ?>
 <style id="ict-ast-checkout-2step-2fa-styles">
 #ict-checkout-login-box label {
     display: block;
@@ -907,6 +916,22 @@ add_action(
 
 .ict-user-registered-message {
     color: #69bf29;
+}
+
+#ict-checkout-login-box .ict-login-actions {
+    display: flex;
+    align-items: center;
+    /*gap: 12px;*/
+}
+
+#ict-checkout-login-box .ict-lost-password-link {
+    margin-left: auto;
+}
+
+#ict-checkout-login-box .ict-optional-login-message {
+    margin-top: 8px;
+    /*font-size: 13px;*/
+    /*color: #666666;*/
 }
 </style>
 <?php
